@@ -4,7 +4,7 @@ import android.graphics.Color;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 
-public class NewAutonomous extends PushBotTelemetrySensors {
+public class BlueAutonomous extends PushBotTelemetrySensors {
 
     private int state = 0;
     private int heading = 0;
@@ -13,10 +13,10 @@ public class NewAutonomous extends PushBotTelemetrySensors {
     float hsvValues[] = {0,0,0};
     final float values[] = hsvValues;
 
-    String firstColorDetected = "None";
+    String firstColorDetected = "";
     String colorDetected = "";
 
-    public NewAutonomous() {
+    public BlueAutonomous() {
 
     }
 
@@ -97,7 +97,7 @@ public class NewAutonomous extends PushBotTelemetrySensors {
                 break;
 
             case 7:
-                if (has_left_drive_encoder_reached(9400)) {
+                if (has_left_drive_encoder_reached(12000)) {
                     reset_drive_encoders();
                     set_drive_power(0,0);
                     state++;
@@ -113,7 +113,7 @@ public class NewAutonomous extends PushBotTelemetrySensors {
                 break;
 
 
-            case 9:
+            /*case 9:
                 run_using_encoders();
                 set_drive_power(.2, -.2);
                 state++;
@@ -157,13 +157,13 @@ public class NewAutonomous extends PushBotTelemetrySensors {
                 }
                 break;
 
-            case 15:
+            */case 9:
                 run_using_encoders();
                 set_drive_power(-.2, .2);
                 state++;
                 break;
 
-            case 16:
+            case 10:
                 if (heading == 0 || (heading > 350 && heading < 360)) {
                     reset_drive_encoders();
                     set_drive_power(0, 0);
@@ -171,22 +171,29 @@ public class NewAutonomous extends PushBotTelemetrySensors {
                 }
                 break;
 
-            case 17:
+            case 11:
                 run_using_encoders();
                 set_drive_power(-.2,-.2);
                 state++;
                 break;
 
-            case 18:  //identify the first color on the beacon
+            case 12:  //identify the first color on the beacon
                 Color.RGBToHSV((colorSensor.red() * 255) / 800, (colorSensor.green() * 255) / 800, (colorSensor.blue() * 255) / 800, hsvValues);
                 telemetry.addData("Hue", hsvValues[0]);
                 hue = hsvValues[0];
                 if ((hue >= 330 && hue <= 360) || (hue >= 220 && hue <= 240)) {
                     if (hue > 330 && hue <= 360) {
                         colorDetected = "red";
+                        if (firstColorDetected.length() == 0) {
+                            firstColorDetected = "red";
+                        }
                     }
                     else {
                         colorDetected = "blue";
+                        if (firstColorDetected.length() == 0) {
+                            firstColorDetected = "blue";
+                        }
+
                     }
                     reset_drive_encoders();
                     set_drive_power(0,0);
@@ -194,28 +201,33 @@ public class NewAutonomous extends PushBotTelemetrySensors {
                 }
                 break;
 
-            case 19:  //extend the beacon out
-                push_button();
-                state++;
+            case 13:  //extend the beacon out
+                if (colorDetected.equals("blue")) {
+                    push_button();
+                    state++;
+                }
+                else {
+                    state = 12;
+                }
                 break;
 
-            case 20:
-                if (climbersWait()) {
+            case 14:
+                if (buttonWait()) {
                     state++;
                 }
                 break;
 
-            case 21:
+            case 15:
                 run_using_encoders();
                 set_drive_power(-.2, -.2);
                 state++;
                 break;
 
-            case 22:
+            case 16:
                 Color.RGBToHSV((colorSensor.red() * 255) / 800, (colorSensor.green() * 255) / 800, (colorSensor.blue() * 255) / 800, hsvValues);
                 telemetry.addData("Hue", hsvValues[0]);
                 hue = hsvValues[0];
-                if (colorDetected.equals("red")) {
+                if (firstColorDetected.equals("red")) {
                     if (hue >= 220 && hue <= 240) {
                         reset_drive_encoders();
                         set_drive_power(0, 0);
@@ -231,51 +243,51 @@ public class NewAutonomous extends PushBotTelemetrySensors {
                 }
                 break;
 
-            case 23:
+            case 17:
                 if (have_drive_encoders_reset()) {
                     state++;
                 }
                 break;
 
-            case 24:
+            case 18:
                 retract_button();
                 state++;
                 break;
 
-            case 25:
-                if (climbersWait()) {
+            case 19:
+                if (buttonWait()) {
                     state++;
                 }
                 break;
 
-            case 26:
+            case 20:
                 turn_climbers();
                 state++;
                 break;
 
-            case 27:
+            case 21:
                 if (climbersWait()) {
                     state++;
                 }
                 break;
 
-            case 28:
+            case 22:
                 drop_climbers();
                 state++;
                 break;
 
-            case 29:
-                if (climbersWait()) {
+            case 23:
+                if (dropWait()) {
                     state++;
                 }
                 break;
 
-            case 30:
+            case 24:
                 retract_climbers();
                 state++;
                 break;
 
-            case 31:
+            case 25:
                 if (climbersWait()) {
                     state++;
                 }

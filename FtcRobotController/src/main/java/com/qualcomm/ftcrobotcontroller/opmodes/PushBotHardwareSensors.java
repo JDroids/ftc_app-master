@@ -165,18 +165,6 @@ public class PushBotHardwareSensors extends PushBotTelemetry
         //
         // If the touch sensor is pressed, halt the motors.
         //
-        if (is_touch_sensor_pressed ())
-        {
-            m_left_arm_power (0.0f);
-        }
-        //
-        // Move the arm upward at full power.
-        //
-        else
-        {
-            m_left_arm_power (1.0f);
-        }
-
         //
         // Return whether the sensor has been pressed.
         //

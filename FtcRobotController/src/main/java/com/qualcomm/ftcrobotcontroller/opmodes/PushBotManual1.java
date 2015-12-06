@@ -89,10 +89,7 @@ public class PushBotManual1 extends PushBotTelemetry
         // front of the robot to the back (i.e. up).  The left trigger makes the
         // arm move from the back to the front (i.e. down).
         //
-        float l_left_arm_power
-            = (float)scale_motor_power (gamepad1.right_trigger)
-            - (float)scale_motor_power (gamepad1.left_trigger);
-        m_left_arm_power (l_left_arm_power);
+
 
         //----------------------------------------------------------------------
         //
@@ -108,24 +105,13 @@ public class PushBotManual1 extends PushBotTelemetry
         // The setPosition methods write the motor power values to the Servo
         // class, but the positions aren't applied until this method ends.
         //
-        if (gamepad1.x)
-        {
-            m_hand_position (a_hand_position () + 0.05);
-        }
-        else if (gamepad1.b)
-        {
-            m_hand_position (a_hand_position () - 0.05);
-        }
+
 
         //
         // Send telemetry data to the driver station.
         //
         update_telemetry (); // Update common telemetry
         update_gamepad_telemetry ();
-        telemetry.addData
-            ( "12"
-            , "Left Arm: " + l_left_arm_power
-            );
 
     } // loop
 

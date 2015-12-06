@@ -141,7 +141,7 @@ public class PushBotManualSensors extends PushBotTelemetrySensors
 
             l_arm_command = (float)scale_motor_power (l_gp2_left_stick_y);
         }
-        m_left_arm_power (l_arm_command);
+
 
         //----------------------------------------------------------------------
         //
@@ -157,14 +157,6 @@ public class PushBotManualSensors extends PushBotTelemetrySensors
         // The setPosition methods write the motor power values to the Servo
         // class, but the positions aren't applied until this method ends.
         //
-        if (gamepad2.x)
-        {
-            m_hand_position (a_hand_position () + 0.05);
-        }
-        else if (gamepad2.b)
-        {
-            m_hand_position (a_hand_position () - 0.05);
-        }
 
         //
         // Send telemetry data to the driver station.

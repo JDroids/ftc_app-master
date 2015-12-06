@@ -18,8 +18,8 @@ public class PushBotDriveTouch extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         // Get references to the motors from the hardware map
-        leftMotor = hardwareMap.dcMotor.get("left_drive");
-        rightMotor = hardwareMap.dcMotor.get("right_drive");
+        leftMotor = hardwareMap.dcMotor.get("m1");
+        rightMotor = hardwareMap.dcMotor.get("m4");
 
         // Reverse the right motor
         rightMotor.setDirection(DcMotor.Direction.REVERSE);

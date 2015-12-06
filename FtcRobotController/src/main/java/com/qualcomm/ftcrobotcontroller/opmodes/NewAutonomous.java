@@ -13,6 +13,7 @@ public class NewAutonomous extends PushBotTelemetrySensors {
     float hsvValues[] = {0,0,0};
     final float values[] = hsvValues;
 
+    String firstColorDetected = "None";
     String colorDetected = "";
 
     public NewAutonomous() {
@@ -176,7 +177,7 @@ public class NewAutonomous extends PushBotTelemetrySensors {
                 state++;
                 break;
 
-            case 18:
+            case 18:  //identify the first color on the beacon
                 Color.RGBToHSV((colorSensor.red() * 255) / 800, (colorSensor.green() * 255) / 800, (colorSensor.blue() * 255) / 800, hsvValues);
                 telemetry.addData("Hue", hsvValues[0]);
                 hue = hsvValues[0];
@@ -193,7 +194,7 @@ public class NewAutonomous extends PushBotTelemetrySensors {
                 }
                 break;
 
-            case 19:
+            case 19:  //extend the beacon out
                 push_button();
                 state++;
                 break;
@@ -202,34 +203,42 @@ public class NewAutonomous extends PushBotTelemetrySensors {
                 if (climbersWait()) {
                     state++;
                 }
-                set_drive_power(-.2, -.2);
                 break;
 
             case 21:
+                run_using_encoders();
+                set_drive_power(-.2, -.2);
+                state++;
+                break;
+
+            case 22:
+                Color.RGBToHSV((colorSensor.red() * 255) / 800, (colorSensor.green() * 255) / 800, (colorSensor.blue() * 255) / 800, hsvValues);
+                telemetry.addData("Hue", hsvValues[0]);
+                hue = hsvValues[0];
                 if (colorDetected.equals("red")) {
                     if (hue >= 220 && hue <= 240) {
-                        set_drive_power(0,0);
+                        reset_drive_encoders();
+                        set_drive_power(0, 0);
+                        state++;
                     }
                 }
                 else {
                     if (hue >= 330 && hue <= 360) {
-                        set_drive_power(0,0);
+                        reset_drive_encoders();
+                        set_drive_power(0, 0);
+                        state++;
                     }
                 }
-
-            case 22:
-                retract_button();
-                state++;
                 break;
 
             case 23:
-                if (climbersWait()) {
+                if (have_drive_encoders_reset()) {
                     state++;
                 }
                 break;
 
             case 24:
-                turn_climbers();
+                retract_button();
                 state++;
                 break;
 
@@ -240,7 +249,7 @@ public class NewAutonomous extends PushBotTelemetrySensors {
                 break;
 
             case 26:
-                drop_climbers();
+                turn_climbers();
                 state++;
                 break;
 
@@ -251,11 +260,22 @@ public class NewAutonomous extends PushBotTelemetrySensors {
                 break;
 
             case 28:
-                retract_climbers();
+                drop_climbers();
                 state++;
                 break;
 
             case 29:
+                if (climbersWait()) {
+                    state++;
+                }
+                break;
+
+            case 30:
+                retract_climbers();
+                state++;
+                break;
+
+            case 31:
                 if (climbersWait()) {
                     state++;
                 }

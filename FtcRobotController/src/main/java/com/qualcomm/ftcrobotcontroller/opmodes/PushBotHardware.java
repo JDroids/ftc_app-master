@@ -852,31 +852,47 @@ public class PushBotHardware extends OpMode
     }
 
     void drop_climbers() {
+        drop_climbers.setDirection(Servo.Direction.REVERSE);
         drop_climbers.setPosition(1);
-        turn_climbers.setPosition(1);
         resetStartTime();
     }
 
     void push_button() {
+        push_button.setPosition(1);
         turn_climbers.setPosition(1);
         drop_climbers.setPosition(.5);
-        push_button.setPosition(1);
         resetStartTime();
     }
 
     void retract_button() {
-
-        turn_climbers.setPosition(1);
-        drop_climbers.setPosition(.5);
         push_button.setDirection(Servo.Direction.REVERSE);
         push_button.setPosition(1);
         resetStartTime();
 
     }
 
-    boolean climbersWait() {
-        if (getRuntime() >= 1.0) {
+    boolean buttonWait() {
+        if (getRuntime() >= 1.55) {
             push_button.setPosition(.5);
+            return true;
+        }
+        telemetry.addData("Runtime", getRuntime());
+        return false;
+    }
+
+    boolean climbersWait() {
+        if (getRuntime() >= 2) {
+            turn_climbers.setPosition(0);
+            return true;
+        }
+        telemetry.addData("Runtime", getRuntime());
+        return false;
+
+    }
+
+
+    boolean dropWait() {
+        if (getRuntime() >= 2) {
             drop_climbers.setPosition(.5);
             return true;
         }

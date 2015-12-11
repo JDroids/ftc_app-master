@@ -4,6 +4,7 @@ import android.graphics.Color;
 
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorController;
 
 public class BlueAutonomous extends PushBotTelemetrySensors {
 
@@ -17,6 +18,7 @@ public class BlueAutonomous extends PushBotTelemetrySensors {
     String firstColorDetected = "";
     String colorDetected = "";
     ColorSensor cs;
+    boolean sweeperStalled= false;
 
     DcMotor sweeper;
     public BlueAutonomous() {
@@ -39,10 +41,29 @@ public class BlueAutonomous extends PushBotTelemetrySensors {
             heading = sensorGyro.getHeading();
         }
 
+        //check if the sweeper is stalled
+        if ( sweeper != null )
+        {
+           if ( !sweeper.isBusy()  ) //not busy means it is stalled or not moving yet
+           {
+               if  ( sweeperStalled = false ) {  //flag indicates not stalled, but motor is not busy - means stalled, stop the motor
+                   sweeper.setMode(DcMotorController.RunMode.RESET_ENCODERS);
+                   sweeper.setPower(0);
+                   sweeperStalled = true;
+               }
+               else {  //flag is true, the motor was stalled and stopped, now its okay to run it again
+                   sweeper.setMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
+                   sweeper.setPower(1);
+                   sweeperStalled = false;
+               }
+           }
+        }
+
         switch (state) {
 
             case 0: // Initialize
                 sweeper = hardwareMap.dcMotor.get("m5");
+                sweeper.setMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
                 sweeper.setPower(1);
                 state++;
                 break;

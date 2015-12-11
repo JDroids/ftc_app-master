@@ -102,74 +102,13 @@ public class BlueAutonomous extends PushBotTelemetrySensors {
 
             case 7:
                 cs = hardwareMap.colorSensor.get("color2");
-                cs.enableLed(true);
                 Color.RGBToHSV((colorSensor.red() * 255) / 800, (colorSensor.green() * 255) / 800, (colorSensor.blue() * 255) / 800, hsvValues);
-                if (cs.blue() >= 5) {
+                if (hsvValues[0] > 230 && hsvValues[0] < 270) {
                     reset_drive_encoders();
                     set_drive_power(0,0);
                     state++;
                 }
                 break;
-
-            /*case 8:
-                run_using_encoders();
-                set_drive_power(0, .2);
-                state++;
-                break;
-
-            case 9:
-                if (have_drive_encoders_reset())
-                {
-                    state++;
-                }
-                break;*/
-
-
-            /*case 9:
-                run_using_encoders();
-                set_drive_power(.2, -.2);
-                state++;
-                break;
-
-
-            case 10:
-                if (heading >= 90) {
-                    reset_drive_encoders();
-                    set_drive_power(0,0);
-                    state++;
-                }
-
-                break;
-
-            case 11:
-                if (has_left_drive_encoder_reset())
-                {
-                    state++;
-                }
-                break;
-
-            case 12:
-                run_using_encoders();
-                set_drive_power(-.3, -.3);
-                state++;
-                break;
-
-            case 13:
-                if (has_left_drive_encoder_reached(3000)) {
-                    reset_drive_encoders();
-                    set_drive_power(0, 0);
-                    state++;
-                }
-
-                break;
-
-            case 14:
-                if (have_drive_encoders_reset()) {
-                    state++;
-                }
-                break;
-
-            */
 
             case 8:
                 if (have_drive_encoders_reset()) {
@@ -345,6 +284,7 @@ public class BlueAutonomous extends PushBotTelemetrySensors {
         telemetry.addData("First Color Detected", firstColorDetected);
         telemetry.addData("Color Detected", colorDetected);
         telemetry.addData("CurrentColor", hsvValues[0]);
+        telemetry.addData("Blue found", hsvValues[0] > 230 && hsvValues[0] < 250);
 
     }
 }

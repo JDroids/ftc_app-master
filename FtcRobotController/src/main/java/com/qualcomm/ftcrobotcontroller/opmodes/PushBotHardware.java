@@ -104,8 +104,17 @@ public class PushBotHardware extends OpMode
             v_motor_left_drive_front.setDirection (DcMotor.Direction.REVERSE);
             v_motor_left_drive_back.setDirection (DcMotor.Direction.REVERSE);
             turn_climbers = hardwareMap.servo.get("s4");
+            turn_climbers.setPosition(0);
             drop_climbers = hardwareMap.servo.get("s5");
+            drop_climbers.setPosition(.5);
             push_button = hardwareMap.servo.get("s6");
+            push_button.setPosition(.5);
+            rightTrigger = hardwareMap.servo.get("s1");
+            rightTrigger.setPosition(0);
+            leftTrigger = hardwareMap.servo.get("s2");
+            leftTrigger.setPosition(1);
+            plough = hardwareMap.servo.get("s3");
+            plough.setPosition(.7);
         }
         catch (Exception p_exeception)
         {
@@ -136,6 +145,14 @@ public class PushBotHardware extends OpMode
             sensorGyro = null;
         }
 
+    }
+
+    public void resetServos() {
+        turn_climbers.setPosition(0);
+        drop_climbers.setPosition(.5);
+        push_button.setPosition(.5);
+        rightTrigger.setPosition(0);
+        leftTrigger.setPosition(1);
     }
 
     boolean a_warning_generated ()
@@ -842,12 +859,12 @@ public class PushBotHardware extends OpMode
     } // have_drive_encoders_reset
 
     void turn_climbers() {
-        turn_climbers.setPosition(0);
+        turn_climbers.setPosition(1);
         resetStartTime();
     }
 
     void retract_climbers() {
-        turn_climbers.setPosition(1);
+        turn_climbers.setPosition(0);
         resetStartTime();
     }
 
@@ -859,8 +876,10 @@ public class PushBotHardware extends OpMode
 
     void push_button() {
         push_button.setPosition(1);
-        turn_climbers.setPosition(1);
+        turn_climbers.setPosition(0);
         drop_climbers.setPosition(.5);
+        leftTrigger.setPosition(1);
+        rightTrigger.setPosition(0);
         resetStartTime();
     }
 
@@ -872,7 +891,7 @@ public class PushBotHardware extends OpMode
     }
 
     boolean buttonWait() {
-        if (getRuntime() >= 1.55) {
+        if (getRuntime() >= 2) {
             push_button.setPosition(.5);
             return true;
         }
@@ -882,7 +901,6 @@ public class PushBotHardware extends OpMode
 
     boolean climbersWait() {
         if (getRuntime() >= 2) {
-            turn_climbers.setPosition(0);
             return true;
         }
         telemetry.addData("Runtime", getRuntime());
@@ -936,10 +954,9 @@ public class PushBotHardware extends OpMode
     private Servo drop_climbers;
     private Servo push_button;
     public GyroSensor sensorGyro;
-    //public TouchSensor touch;
+    private Servo leftTrigger;
+    private Servo rightTrigger;
+    private Servo plough;
     public ColorSensor colorSensor;
-
-
-
 
 } // PushBotHardware

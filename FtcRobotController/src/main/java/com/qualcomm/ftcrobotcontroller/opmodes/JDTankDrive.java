@@ -7,6 +7,9 @@ import com.qualcomm.robotcore.util.Range;
 
 public class JDTankDrive extends OpMode {
 
+    boolean climbersTurned = false;
+    boolean climbersDropped = false;
+    int churroDirection = 1;
     // Declare all motors being used
     DcMotor motorRightFront;
     DcMotor motorLeftFront;
@@ -15,7 +18,6 @@ public class JDTankDrive extends OpMode {
     DcMotor sweeper;
     DcMotor churroWheels;
 
-    Servo dispenseClimbers;
     Servo leftTrigger;
     Servo rightTrigger;
     Servo plough;
@@ -46,6 +48,7 @@ public class JDTankDrive extends OpMode {
         churroWheels = hardwareMap.dcMotor.get("m6");
 
         plough = hardwareMap.servo.get("s3");
+        plough.setPosition(.3);
 
         motorLeftFront.setDirection(DcMotor.Direction.REVERSE);
         motorLeftBack.setDirection(DcMotor.Direction.REVERSE);
@@ -54,13 +57,12 @@ public class JDTankDrive extends OpMode {
         leftTrigger = hardwareMap.servo.get("s2");
 
         turnClimbers = hardwareMap.servo.get("s4");
+        turnClimbers.setPosition(0);
         dropClimbers = hardwareMap.servo.get("s5");
+        dropClimbers.setPosition(.5);
 
         leftTrigger.setPosition(0);
         rightTrigger.setPosition(1);
-        dropClimbers.setPosition(.5);
-        turnClimbers.setPosition(1);
-        plough.setPosition(.3);
 
     }
 
@@ -114,7 +116,6 @@ public class JDTankDrive extends OpMode {
 
         // Drop servo to hit trigger
         if(gamepad1.right_bumper) {
-            ;
             rightTrigger.setPosition(.4);
         }
 
@@ -123,24 +124,52 @@ public class JDTankDrive extends OpMode {
             leftTrigger.setPosition(0);
             rightTrigger.setPosition(1);
         }
-        if (gamepad1.a) {
-            churroWheels.setPower(-1);
+
+        if (gamepad2.a) {
+            if (churroDirection == 1) {
+                churroWheels.setPower(1);
+                churroDirection = 0;
+            }
+            else {
+                churroWheels.setPower(-1);
+                churroDirection = 1;
+            }
+
         }
-        if (gamepad1.y) {
-            churroWheels.setPower(.25);
-        }
-        if (gamepad1.b) {
+        if (gamepad2.b) {
             churroWheels.setPower(0);
         }
 
+        if (gamepad2.x) {
+            if (!climbersTurned) {
+                turnClimbers.setPosition(0);
+                climbersTurned = true;
+            }
+            else {
+                turnClimbers.setPosition(1);
+                climbersTurned = false;
+            }
+        }
+        if (gamepad2.y) {
+            if (!climbersDropped) {
+                dropClimbers.setPosition(1);
+                climbersDropped = true;
+            }
+            else {
+                dropClimbers.setPosition(.5);
+                climbersDropped = false;
+            }
+        }
+
+
         // Powers up sweeper
-        if (gamepad2.right_bumper) {
+        if (gamepad2.left_bumper) {
             sweeper.setPower(1);
             sweeperDirection = 0;
         }
 
         // Switches direction of sweeper
-        if (gamepad2.left_bumper) {
+        if (gamepad2.right_bumper) {
             sweeper.setPower(-1);
             sweeperDirection = 1;
         }
@@ -150,12 +179,8 @@ public class JDTankDrive extends OpMode {
             sweeper.setPower(0);
         }
 
-        // Slow down the sweeper
-        if (gamepad2.y) {
-            if (sweeperDirection == 1)
-                sweeper.setPower(-.08);
-            else
-                sweeper.setPower(.08);
+        if (gamepad2.dpad_right) {
+            sweeper.setPower(.15);
         }
 
         // Drop down the plough
@@ -163,22 +188,33 @@ public class JDTankDrive extends OpMode {
             plough.setPosition(0);
         }
 
-        // Raise the plough
         if (gamepad2.dpad_up) {
             plough.setPosition(1);
         }
-        if (gamepad2.a) {
+        if (gamepad1.a) {
+            if (!climbersTurned) {
+                turnClimbers.setPosition(0);
+                leftTrigger.setPosition(1);
+                rightTrigger.setPosition(0);
+            }
+            else {
+                turnClimbers.setPosition(1);
+                leftTrigger.setPosition(1);
+                rightTrigger.setPosition(0);
+            }
 
-            dropClimbers.setPosition(.15);
-            leftTrigger.setPosition(1);
-            rightTrigger.setPosition(0);
         }
 
         // Resets the servo
-        if (gamepad2.b) {
-            dispenseClimbers.setPosition(1);
-        }
+        if (gamepad1.b) {
+            if (!climbersDropped) {
+                dropClimbers.setPosition(1);
+            }
+            if (climbersDropped) {
+                dropClimbers.setPosition(.5);
+            }
 
+        }
 
         if (gamepad2.dpad_down) {
             plough.setPosition(.7);

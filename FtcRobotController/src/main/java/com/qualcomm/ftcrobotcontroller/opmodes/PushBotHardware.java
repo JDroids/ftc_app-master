@@ -110,9 +110,9 @@ public class PushBotHardware extends OpMode
             push_button = hardwareMap.servo.get("s6");
             push_button.setPosition(.5);
             rightTrigger = hardwareMap.servo.get("s1");
-            rightTrigger.setPosition(0);
+            rightTrigger.setPosition(1);
             leftTrigger = hardwareMap.servo.get("s2");
-            leftTrigger.setPosition(1);
+            leftTrigger.setPosition(0);
             plough = hardwareMap.servo.get("s3");
             plough.setPosition(.7);
         }
@@ -891,6 +891,20 @@ public class PushBotHardware extends OpMode
     }
 
     boolean buttonWait() {
+        if (timeCalled) {
+            timeToStop = getRuntime() + 2;
+            timeCalled = false;
+        }
+        if (getRuntime() >= timeToStop) {
+            timeCalled = true;
+            push_button.setPosition(.5);
+            return true;
+        }
+        telemetry.addData("Runtime", getRuntime());
+        return false;
+    }
+
+    boolean buttonWait2() {
         if (getRuntime() >= 2) {
             push_button.setPosition(.5);
             return true;
@@ -899,7 +913,7 @@ public class PushBotHardware extends OpMode
         return false;
     }
 
-    boolean climbersWait() {
+    boolean climbersWait2() {
         if (getRuntime() >= 2) {
             return true;
         }
@@ -908,8 +922,36 @@ public class PushBotHardware extends OpMode
 
     }
 
+    boolean climbersWait() {
+        if (timeCalled) {
+            timeToStop = getRuntime() + 2;
+            timeCalled = false;
+        }
+        if (getRuntime() >= timeToStop) {
+            timeCalled = true;
+            return true;
+        }
+        telemetry.addData("Runtime", getRuntime());
+        return false;
+
+    }
 
     boolean dropWait() {
+        if (timeCalled2) {
+            timeToStop2 = getRuntime() + 2;
+            timeCalled2 = false;
+        }
+        if (getRuntime() >= timeToStop2) {
+            drop_climbers.setPosition(.5);
+            timeCalled2 = true;
+            return true;
+        }
+        telemetry.addData("Runtime", getRuntime());
+        return false;
+
+    }
+
+    boolean dropWait2() {
         if (getRuntime() >= 2) {
             drop_climbers.setPosition(.5);
             return true;
@@ -958,5 +1000,9 @@ public class PushBotHardware extends OpMode
     private Servo rightTrigger;
     private Servo plough;
     public ColorSensor colorSensor;
+    boolean timeCalled = true;
+    boolean timeCalled2 = true;
+    double timeToStop = 0;
+    double timeToStop2 = 0;
 
 } // PushBotHardware

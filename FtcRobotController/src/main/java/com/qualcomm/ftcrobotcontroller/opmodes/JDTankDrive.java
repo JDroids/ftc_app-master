@@ -7,10 +7,6 @@ import com.qualcomm.robotcore.util.Range;
 
 public class JDTankDrive extends OpMode {
 
-    boolean climbersTurned = false;
-    boolean climbersDropped = false;
-    int churroDirection = 1;
-    // Declare all motors being used
     DcMotor motorRightFront;
     DcMotor motorLeftFront;
     DcMotor motorLeftBack;
@@ -24,10 +20,8 @@ public class JDTankDrive extends OpMode {
     Servo turnClimbers;
     Servo dropClimbers;
 
-    // Current direction of the sweeper
     int sweeperDirection = 0;
 
-    // Current direction of the robot
     String orientation = "FORWARD";
 
     public JDTankDrive() {
@@ -47,22 +41,22 @@ public class JDTankDrive extends OpMode {
         sweeper = hardwareMap.dcMotor.get("m5");
         churroWheels = hardwareMap.dcMotor.get("m6");
 
-        plough = hardwareMap.servo.get("s3");
-        plough.setPosition(.3);
-
         motorLeftFront.setDirection(DcMotor.Direction.REVERSE);
         motorLeftBack.setDirection(DcMotor.Direction.REVERSE);
 
         rightTrigger = hardwareMap.servo.get("s1");
+        rightTrigger.setPosition(1);
         leftTrigger = hardwareMap.servo.get("s2");
+        leftTrigger.setPosition(0);
+
+        plough = hardwareMap.servo.get("s3");
+        plough.setPosition(.3);
 
         turnClimbers = hardwareMap.servo.get("s4");
         turnClimbers.setPosition(0);
+
         dropClimbers = hardwareMap.servo.get("s5");
         dropClimbers.setPosition(.5);
-
-        leftTrigger.setPosition(0);
-        rightTrigger.setPosition(1);
 
     }
 
@@ -99,6 +93,9 @@ public class JDTankDrive extends OpMode {
         motorLeftFront.setPower(leftThrottle);
         motorLeftBack.setPower(leftThrottle);
 
+        leftTrigger.setPosition(gamepad2.left_trigger);
+        rightTrigger.setPosition(1-gamepad2.right_trigger);
+
         // Sets the orientation of the robot so the front side is forward
         if (gamepad1.dpad_up) {
             orientation = "FORWARD";
@@ -109,58 +106,17 @@ public class JDTankDrive extends OpMode {
             orientation = "BACKWARD";
         }
 
-        // Drop servo to hit trigger
         if(gamepad1.left_bumper) {
-            leftTrigger.setPosition(.6);
+            plough.setPosition(.7);
         }
 
-        // Drop servo to hit trigger
-        if(gamepad1.right_bumper) {
-            rightTrigger.setPosition(.4);
+        if (gamepad1.right_bumper) {
+            plough.setPosition(.5);
         }
 
-        // Resets the servos used to hit the triggers
-        if(gamepad1.x) {
-            leftTrigger.setPosition(0);
-            rightTrigger.setPosition(1);
-        }
-
-        if (gamepad2.a) {
-            if (churroDirection == 1) {
-                churroWheels.setPower(1);
-                churroDirection = 0;
-            }
-            else {
-                churroWheels.setPower(-1);
-                churroDirection = 1;
-            }
-
-        }
-        if (gamepad2.b) {
-            churroWheels.setPower(0);
-        }
-
-        if (gamepad2.x) {
-            if (!climbersTurned) {
-                turnClimbers.setPosition(0);
-                climbersTurned = true;
-            }
-            else {
-                turnClimbers.setPosition(1);
-                climbersTurned = false;
-            }
-        }
-        if (gamepad2.y) {
-            if (!climbersDropped) {
-                dropClimbers.setPosition(1);
-                climbersDropped = true;
-            }
-            else {
-                dropClimbers.setPosition(.5);
-                climbersDropped = false;
-            }
-        }
-
+        turnClimbers.setPosition(gamepad1.right_trigger);
+        dropClimbers.setDirection(Servo.Direction.REVERSE);
+        dropClimbers.setPosition(Range.clip(gamepad1.left_trigger, .5, 1));
 
         // Powers up sweeper
         if (gamepad2.left_bumper) {
@@ -179,62 +135,22 @@ public class JDTankDrive extends OpMode {
             sweeper.setPower(0);
         }
 
-        if (gamepad2.dpad_right) {
-            sweeper.setPower(.15);
-        }
-
-        // Drop down the plough
-        if (gamepad2.dpad_down) {
-            plough.setPosition(0);
+        if (gamepad2.y) {
+            sweeper.setPower(.05);
         }
 
         if (gamepad2.dpad_up) {
-            plough.setPosition(1);
+            churroWheels.setPower(1);
         }
-        if (gamepad1.a) {
-            if (!climbersTurned) {
-                turnClimbers.setPosition(0);
-                leftTrigger.setPosition(1);
-                rightTrigger.setPosition(0);
-            }
-            else {
-                turnClimbers.setPosition(1);
-                leftTrigger.setPosition(1);
-                rightTrigger.setPosition(0);
-            }
-
-        }
-
-        // Resets the servo
-        if (gamepad1.b) {
-            if (!climbersDropped) {
-                dropClimbers.setPosition(1);
-            }
-            if (climbersDropped) {
-                dropClimbers.setPosition(.5);
-            }
-
-        }
-
         if (gamepad2.dpad_down) {
-            plough.setPosition(.7);
+            churroWheels.setPower(-1);
         }
-        if (gamepad2.dpad_up) {
-            plough.setPosition(.5);
+        if (gamepad2.a) {
+            churroWheels.setPower(0);
         }
 
-        // Telemetry on state of motors
-        telemetry.addData("Text", "*** Robot Data***");
-
-        telemetry.addData("left tgt pwr", "left  pwr: " + String.format("%.2f", leftThrottle));
-        telemetry.addData("right tgt pwr", "right pwr: " + String.format("%.2f", rightThrottle));
     }
 
-    /*
-     * Code to run when the op mode is first disabled goes here
-     *
-     * @see com.qualcomm.robotcore.eventloop.opmode.OpMode#stop()
-     */
     @Override
     public void stop() {
 

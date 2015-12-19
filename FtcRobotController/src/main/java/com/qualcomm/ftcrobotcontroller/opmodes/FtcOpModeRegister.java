@@ -42,6 +42,7 @@ public class FtcOpModeRegister implements OpModeRegister {
 
     manager.register("TeleOp", JDTankDrive.class);
     manager.register("BlueAutonomous", BlueAutonomous.class);
+    manager.register("RedAutonomous", RedAutonomous.class);
     manager.register("ColorTest", ColorSensorDriver.class);
       manager.register("AdafruitColorSensor", AdafruitRGBExample.class);
 

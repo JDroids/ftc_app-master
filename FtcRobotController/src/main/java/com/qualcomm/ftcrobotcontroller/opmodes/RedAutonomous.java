@@ -40,6 +40,13 @@ public class RedAutonomous extends PushBotTelemetrySensors {
     @Override
     public void loop() {
 
+        if (getRuntime() > 29) {
+            run_using_encoders();
+            set_drive_power(0,0);
+            sweeper.setPower(0);
+            stop();
+        }
+
         if (state != 0) {
             heading = sensorGyro.getHeading();
         }
@@ -147,7 +154,7 @@ public class RedAutonomous extends PushBotTelemetrySensors {
                 run_using_encoders();
                 set_drive_power(-.4, -.4);
 
-                if (has_left_drive_encoder_reached(1300)) {
+                if (has_left_drive_encoder_reached(1200)) {
                     reset_drive_encoders();
                     set_drive_power(0,0);
                     state++;
@@ -165,7 +172,7 @@ public class RedAutonomous extends PushBotTelemetrySensors {
 
             case 12:
                 run_using_encoders();
-                set_drive_power(0, -.3);
+                set_drive_power(0, -.5);
                 state++;
                 break;
 
@@ -189,11 +196,11 @@ public class RedAutonomous extends PushBotTelemetrySensors {
                 if (heading >= 175 && (heading <= 345)) {
                     reset_drive_encoders();
                     set_drive_power(0,0);
-                    state++;
+                    state+=14;
                 }
                 break;
 
-            case 16:
+            /*case 16:
                 if (have_drive_encoders_reset()) {
                     state++;
                 }
@@ -226,7 +233,8 @@ public class RedAutonomous extends PushBotTelemetrySensors {
                 telemetry.addData("Hue", hsvValues[0]);
                 hue = hsvValues[0];
                 if ((hue >= 330 && hue <= 360) || (hue >= 210 && hue <= 235)) {
-                    if (hue > 330 && hue <= 360) {
+                    if ((hue > 330 && hue <= 360) || (hue > 0 && hue < 30)) {
+
                         colorDetected = "red";
                         if (firstColorDetected.length() == 0) {
                             firstColorDetected = "red";
@@ -255,15 +263,15 @@ public class RedAutonomous extends PushBotTelemetrySensors {
             case 22:
                 run_using_encoders();
                 set_drive_power(.2,.2);
-                if (firstColorDetected.equals("blue")) {
-                    if (has_left_drive_encoder_reached(100)) {
+                if (firstColorDetected.equals("red")) {
+                    if (has_left_drive_encoder_reached(400)) {
                         reset_drive_encoders();
                         set_drive_power(0, 0);
                         state++;
                     }
                 }
-                else if (firstColorDetected.equals("red")) {
-                    if (has_left_drive_encoder_reached(400)) {
+                else if (firstColorDetected.equals("blue")) {
+                    if (has_left_drive_encoder_reached(200)) {
                         reset_drive_encoders();
                         set_drive_power(0, 0);
                         state++;
@@ -306,7 +314,7 @@ public class RedAutonomous extends PushBotTelemetrySensors {
                 telemetry.addData("Moving Forward to adjust for climber drop", "");
                 run_using_encoders();
                 set_drive_power(-.3,-.3);
-                if (firstColorDetected.equals("blue")) {
+                if (firstColorDetected.equals("red")) {
                     if (has_left_drive_encoder_reached(1000)) {
                         reset_drive_encoders();
                         set_drive_power(0, 0);
@@ -321,9 +329,9 @@ public class RedAutonomous extends PushBotTelemetrySensors {
                     }
                 }
 
-                break;
+                break;*/
 
-            case 29:
+            /*case 29:
                 turn_climbers();
                 state++;
                 break;
@@ -355,7 +363,7 @@ public class RedAutonomous extends PushBotTelemetrySensors {
                     state++;
                 }
                 sweeper.setPower(0);
-                break;
+                break;*/
 
             default:
 

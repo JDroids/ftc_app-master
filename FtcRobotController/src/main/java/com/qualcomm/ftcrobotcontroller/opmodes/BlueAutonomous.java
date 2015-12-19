@@ -21,8 +21,6 @@ public class BlueAutonomous extends PushBotTelemetrySensors {
     String firstColorDetected = "";
     String colorDetected = "";
     ColorSensor cs;
-    boolean sweeperStalled= false;
-    int sweeperDirection = 0;
 
     DcMotor sweeper;
     public BlueAutonomous() {
@@ -42,21 +40,12 @@ public class BlueAutonomous extends PushBotTelemetrySensors {
     @Override
     public void loop() {
 
-        /*if ((int)(getRuntime()+.5)%6 == 0 || (int)(getRuntime()+.5)%6 == 1) {
-            sweeper.setPower(1);
-        }
-        else if ((int)(getRuntime()+.5)%6 == 2 || (int)(getRuntime()+.5)%6 == 3) {
+        if (getRuntime() > 29) {
+            run_using_encoders();
+            set_drive_power(0,0);
             sweeper.setPower(0);
+            stop();
         }
-        else {
-            sweeper.setPower(-1);
-        }
-
-        if (getRuntime() > 28) {
-            set_drive_power(0, 0);
-            sweeper.setPower(0);
-            state = 50;
-        }*/
 
         if (state != 0) {
             heading = sensorGyro.getHeading();
@@ -88,7 +77,7 @@ public class BlueAutonomous extends PushBotTelemetrySensors {
             case 1: // Move forward a little bit
 
                 run_using_encoders();
-                set_drive_power(-.7, -.7);
+                set_drive_power(-.5, -.5);
 
                 if (has_left_drive_encoder_reached(2500)) {
                     reset_drive_encoders();
@@ -133,7 +122,7 @@ public class BlueAutonomous extends PushBotTelemetrySensors {
 
             case 6:
                 run_using_encoders();
-                set_drive_power(-.7, -.7);
+                set_drive_power(-.5, -.5);
                 state++;
                 break;
 
@@ -236,14 +225,14 @@ public class BlueAutonomous extends PushBotTelemetrySensors {
                 run_using_encoders();
                 set_drive_power(.2,.2);
                 if (firstColorDetected.equals("blue")) {
-                    if (has_left_drive_encoder_reached(700)) {
+                    if (has_left_drive_encoder_reached(400)) {
                         reset_drive_encoders();
                         set_drive_power(0, 0);
                         state++;
                     }
                 }
                 else if (firstColorDetected.equals("red")) {
-                    if (has_left_drive_encoder_reached(100)) {
+                    if (has_left_drive_encoder_reached(600)) {
                         reset_drive_encoders();
                         set_drive_power(0, 0);
                         state++;
@@ -282,62 +271,19 @@ public class BlueAutonomous extends PushBotTelemetrySensors {
                 }
                 break;
 
-            /**case 22:
-                run_using_encoders();
-                set_drive_power(-.3, -.3);
-                telemetry.addData("Driving forward for 2nd Push Button", "");
-                if (has_left_drive_encoder_reached(200)) {
-                    telemetry.addData("Reached 200 unit forward for 2nd Push Button", "");
-                    reset_drive_encoders();
-                    set_drive_power(0, 0);
-                    push_button();
-                    telemetry.addData("Started 2nd Push Button", "");
-                    state++;
-                }
-                break;
-
-            case 23:
-                if (buttonWait()) {
-                    telemetry.addData("Finished 2nd Push Button, starting to retract", "");
-                    state++;
-                }
-                break;
-
-            case 24:
-                retract_button();
-                state++;
-                break;
-
-            case 25:
-                if (buttonWait()) {
-                    telemetry.addData("Retraction of 2nd Push completed", "");
-                    state++;
-                }
-                break;
-
-            case 26:
-                if (have_drive_encoders_reset()) {
-                    state++;
-                }
-                break;**/
-
             case 23:
                 telemetry.addData("Moving Forward to adjust for climber drop", "");
                 run_using_encoders();
                 set_drive_power(-.3,-.3);
                 if (firstColorDetected.equals("blue")) {
-                    if (has_left_drive_encoder_reached(1000)) {
+                    if (has_left_drive_encoder_reached(200)) {
                         reset_drive_encoders();
                         set_drive_power(0, 0);
                         state++;
                     }
                 }
                 else {
-                    if (has_left_drive_encoder_reached(700)) {
-                        reset_drive_encoders();
-                        set_drive_power(0, 0);
-                        state++;
-                    }
+                    state++;
                 }
 
                 break;
@@ -373,6 +319,7 @@ public class BlueAutonomous extends PushBotTelemetrySensors {
                 if (climbersWait()) {
                     state++;
                 }
+                sweeper.setPower(0);
                 break;
 
             default:

@@ -2,11 +2,20 @@ package com.qualcomm.ftcrobotcontroller.opmodes;
 
 import android.graphics.Color;
 
+import com.qualcomm.ftccommon.DbgLog;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorController;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+
 public class BlueAutonomous extends PushBotTelemetrySensors {
+
+    File outputfile;
+    FileWriter out;
+    String text;
 
     private int state = 0;
     private int heading = 0;
@@ -35,6 +44,32 @@ public class BlueAutonomous extends PushBotTelemetrySensors {
         reset_drive_encoders();
         resetStartTime();
         colorSensor = hardwareMap.colorSensor.get("color");
+
+        outputfile = new File("/sdcard/testout.txt");
+
+        //Set the file for write mode
+        try {
+            out = new FileWriter(outputfile);
+        } catch (IOException e) {
+            DbgLog.logStacktrace(e);
+        }
+
+        //Write some text to the file
+        text = "JDroids Test Logs";
+        try {
+            out.write(text);
+        } catch (IOException e) {
+            DbgLog.logStacktrace(e);
+        }
+
+        //Close the resource
+        if(out != null) {
+            try {
+                out.close();
+            } catch (IOException e) {
+                DbgLog.logStacktrace(e);
+            }
+        }
     }
 
     @Override
@@ -50,31 +85,17 @@ public class BlueAutonomous extends PushBotTelemetrySensors {
         if (state != 0) {
             heading = sensorGyro.getHeading();
         }
-           /*if ( !sweeper.isBusy()  ) //not busy means it is stalled or not moving yet
-           {
-               if  ( sweeperStalled = false ) {  //flag indicates not stalled, but motor is not busy - means stalled, stop the motor
-                   sweeper.setMode(DcMotorController.RunMode.RESET_ENCODERS);
-                   sweeper.setPower(0);
-                   sweeperStalled = true;
-               }
-               else {  //flag is true, the motor was stalled and stopped, now its okay to run it again
-                   sweeper.setMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
-                   sweeper.setPower(1);
-                   sweeperStalled = false;
-               }
-           }*/
 
         switch (state) {
 
-            case 0: // Initialize
+            case 0: //Initialize, starts sweeper?,
                 sweeper = hardwareMap.dcMotor.get("m5");
                 sweeper.setMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
                 sweeper.setPower(1);
                 state++;
                 break;
 
-
-            case 1: // Move forward a little bit
+            case 1: //Moves forward
 
                 run_using_encoders();
                 set_drive_power(-.5, -.5);
@@ -84,7 +105,6 @@ public class BlueAutonomous extends PushBotTelemetrySensors {
                     set_drive_power(0,0);
                     state++;
                 }
-
                 break;
 
             case 2: // Wait for the previous statement to finish executing...repeat after every case
@@ -100,40 +120,38 @@ public class BlueAutonomous extends PushBotTelemetrySensors {
                 run_using_encoders();
                 set_drive_power(.1, -.1);
                 state++;
-
                 break;
 
-            case 4:
+            case 4: //if ___, stops
 
                 if (heading >= 48 && !(heading <= 360 && heading >= 270)) {
                     reset_drive_encoders();
                     set_drive_power(0,0);
                     state++;
                 }
-
                 break;
 
-            case 5:
+            case 5: //
                 if (have_drive_encoders_reset())
                 {
                     state++;
                 }
                 break;
 
-            case 6:
+            case 6: //Moves forward
                 run_using_encoders();
                 set_drive_power(-.5, -.5);
                 state++;
                 break;
 
-            case 7:
+            case 7: //if ____, slows
                 if (has_left_drive_encoder_reached(6000)) {
                     set_drive_power(-.2,-.2);
                     state++;
                 }
                 break;
 
-            case 8:
+            case 8: //Checks color, if ___ stops
                 cs = hardwareMap.colorSensor.get("color2");
                 Color.RGBToHSV((cs.red() * 255) / 800, (cs.green() * 255) / 800, (cs.blue() * 255) / 800, hsvValues2);
                 if (hsvValues2[0] > 340 || hsvValues2[0] < 9) {
@@ -143,23 +161,21 @@ public class BlueAutonomous extends PushBotTelemetrySensors {
                 }
                 break;
 
-            case 9:
+            case 9: //
                 if (have_drive_encoders_reset()) {
                     state++;
                 }
                 break;
 
-            case 10: // Move forward a little bit
+            case 10: // Move forward a little bit, if ____ stops
 
                 run_using_encoders();
                 set_drive_power(-.4, -.4);
-
                 if (has_left_drive_encoder_reached(1000)) {
                     reset_drive_encoders();
                     set_drive_power(0,0);
                     state++;
                 }
-
                 break;
 
             case 11: // Wait for the previous statement to finish executing...repeat after every case
@@ -170,13 +186,13 @@ public class BlueAutonomous extends PushBotTelemetrySensors {
                 }
                 break;
 
-            case 12:
+            case 12: //Turns left
                 run_using_encoders();
                 set_drive_power(-.3, 0);
                 state++;
                 break;
 
-            case 13:
+            case 13://if___, stops
                 if (heading == 0 || (heading > 350 && heading < 360)) {
                     reset_drive_encoders();
                     set_drive_power(0, 0);
@@ -184,7 +200,7 @@ public class BlueAutonomous extends PushBotTelemetrySensors {
                 }
                 break;
 
-            case 14:
+            case 14: //Moves forward
                 run_using_encoders();
                 set_drive_power(-.2,-.2);
                 state++;
@@ -206,7 +222,6 @@ public class BlueAutonomous extends PushBotTelemetrySensors {
                         if (firstColorDetected.length() == 0) {
                             firstColorDetected = "blue";
                         }
-
                     }
                     reset_drive_encoders();
                     set_drive_power(0, 0);
@@ -221,7 +236,7 @@ public class BlueAutonomous extends PushBotTelemetrySensors {
                 }
                 break;
 
-            case 17:
+            case 17: //moves forward, if detects blue or red, stops
                 run_using_encoders();
                 set_drive_power(.2,.2);
                 if (firstColorDetected.equals("blue")) {
@@ -243,35 +258,35 @@ public class BlueAutonomous extends PushBotTelemetrySensors {
                 }
                 break;
 
-            case 18:  //extend the pusher out
+            case 18:  //extends the pusher out
                 push_button();
                 state++;
                 break;
 
-            case 19:
+            case 19: //waits, moves on after 2 seconds
                 if (buttonWait()) {
                     state++;
                 }
                 break;
 
-            case 20:
+            case 20: //retracts pusher
                 retract_button();
                 state++;
                 break;
 
-            case 21:
+            case 21: //waits, moves on after 2 seconds
                 if (buttonWait()) {
                     state++;
                 }
                 break;
 
-            case 22:
+            case 22: //
                 if (have_drive_encoders_reset()) {
                     state++;
                 }
                 break;
 
-            case 23:
+            case 23: //moves forward, after certain dist., stops
                 telemetry.addData("Moving Forward to adjust for climber drop", "");
                 run_using_encoders();
                 set_drive_power(-.3,-.3);
@@ -285,40 +300,33 @@ public class BlueAutonomous extends PushBotTelemetrySensors {
                 else {
                     state++;
                 }
-
                 break;
 
-            case 24:
+            case 24: //rotates climber arm
                 turn_climbers();
                 state++;
                 break;
 
-            case 25:
+            case 25: //waits two seconds for climber arm to extend, moves on
                 if (climbersWait()) {
                     state++;
                 }
                 break;
 
-            case 26:
+            case 26: //rotates climber arm
                 drop_climbers();
                 state++;
                 break;
 
-            case 27:
+            case 27: //waits for two seconds for climbers to drop, moves on
                 if (dropWait()) {
                     state++;
                 }
                 break;
 
-            case 28:
+            case 28: //retracts climber arm
                 retract_climbers();
                 state++;
-                break;
-
-            case 29:
-                if (climbersWait()) {
-                    state++;
-                }
                 sweeper.setPower(0);
                 break;
 
@@ -337,6 +345,13 @@ public class BlueAutonomous extends PushBotTelemetrySensors {
         telemetry.addData("Sweeper power", sweeper.getPower());
         telemetry.addData("Runtime", getRuntime());
         telemetry.addData("Color sensor 2 hue", hsvValues2[0]);
+        DbgLog.msg("JDroids Telemetry file");
+        DbgLog.msg("Heading: " + heading);
+        try {
+            out.write(heading);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
     }
 }

@@ -31,6 +31,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
 package com.qualcomm.ftcrobotcontroller.opmodes;
 
+import com.qualcomm.ftcrobotcontroller.CameraPreview;
 import com.qualcomm.robotcore.eventloop.opmode.OpModeManager;
 import com.qualcomm.robotcore.eventloop.opmode.OpModeRegister;
 
@@ -45,6 +46,9 @@ public class FtcOpModeRegister implements OpModeRegister {
     manager.register("RedAutonomous", RedAutonomous.class);
     manager.register("ColorTest", ColorSensorDriver.class);
       manager.register("AdafruitColorSensor", AdafruitRGBExample.class);
+    manager.register("Camera", OpModeCamera.class);
+    manager.register("DetectColor", DetectColor.class);
+    manager.register("CameraPreview", CameraPreview.class);
 
     //manager.register("AdafruitRGBExample", AdafruitRGBExample.class);
     //manager.register("ColorSensorDriver", ColorSensorDriver.class);

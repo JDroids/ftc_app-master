@@ -2,10 +2,20 @@ package com.qualcomm.ftcrobotcontroller.opmodes;
 
 import android.graphics.Color;
 
+import com.qualcomm.ftccommon.DbgLog;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorController;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 
 public class BlueAutonomousWhite extends PushBotTelemetrySensors {
+
+    File outputfile;
+    FileWriter out;
+    String text;
 
     private int state = 0;
     private int heading = 0;
@@ -14,12 +24,14 @@ public class BlueAutonomousWhite extends PushBotTelemetrySensors {
     float hsvValues[] = {0,0,0};
     final float values[] = hsvValues;
 
+    float hsvValues2[] = {0,0,0};
+    final float values2[] = hsvValues2;
+
     String firstColorDetected = "";
     String colorDetected = "";
     ColorSensor cs;
 
     DcMotor sweeper;
-    int sweeperDirection = 0;
     public BlueAutonomousWhite() {
 
     }
@@ -30,26 +42,44 @@ public class BlueAutonomousWhite extends PushBotTelemetrySensors {
         super.start();
 
         reset_drive_encoders();
-        colorSensor = hardwareMap.colorSensor.get("color");
         resetStartTime();
+        colorSensor = hardwareMap.colorSensor.get("color");
+
+        outputfile = new File("/sdcard/testout.txt");
+
+        //Set the file for write mode
+        try {
+            out = new FileWriter(outputfile);
+        } catch (IOException e) {
+            DbgLog.logStacktrace(e);
+        }
+
+        //Write some text to the file
+        text = "JDroids Test Logs";
+        try {
+            out.write(text);
+        } catch (IOException e) {
+            DbgLog.logStacktrace(e);
+        }
+
+        //Close the resource
+        if(out != null) {
+            try {
+                out.close();
+            } catch (IOException e) {
+                DbgLog.logStacktrace(e);
+            }
+        }
     }
 
     @Override
     public void loop() {
 
-        if ((int)getRuntime()%2 == 0) {
-            if (sweeperDirection == 0) {
-                sweeper.setPower(1);
-                sweeperDirection = 1;
-            }
-            else {
-                sweeper.setPower(-1);
-                sweeperDirection = 0;
-            }
-        }
-
-        if (getRuntime() >= 29) {
-            state = 50;
+        if (getRuntime() > 29) {
+            run_using_encoders();
+            set_drive_power(0,0);
+            sweeper.setPower(0);
+            stop();
         }
 
         if (state != 0) {
@@ -58,27 +88,26 @@ public class BlueAutonomousWhite extends PushBotTelemetrySensors {
 
         switch (state) {
 
-            case 0: // Initialize
+            case 0: //Initialize, starts sweeper
                 sweeper = hardwareMap.dcMotor.get("m5");
+                sweeper.setMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
                 sweeper.setPower(1);
                 state++;
                 break;
 
-
-            case 1: // Move forward a little bit
+            case 1: //Moves forward, stops after certain distance
 
                 run_using_encoders();
-                set_drive_power(-.4, -.4);
+                set_drive_power(-.5, -.5);
 
-                if (has_left_drive_encoder_reached(3000)) {
+                if (has_left_drive_encoder_reached(2500)) {
                     reset_drive_encoders();
                     set_drive_power(0,0);
                     state++;
                 }
-
                 break;
 
-            case 2: // Wait for the previous statement to finish executing...repeat after every case
+            case 2: //checks that encoders are reset
 
                 if (has_left_drive_encoder_reset())
                 {
@@ -89,65 +118,67 @@ public class BlueAutonomousWhite extends PushBotTelemetrySensors {
             case 3: // Turn right
 
                 run_using_encoders();
-                set_drive_power(.2, -.2);
+                set_drive_power(.1, -.1);
                 state++;
-
                 break;
 
-            case 4:
+            case 4: //stops after 45 degree turn
 
-                if (heading >= 45 && !(heading > 270 && heading <= 360)) {
+                if (heading >= 45 && !(heading <= 360 && heading >= 270)) {
                     reset_drive_encoders();
                     set_drive_power(0,0);
                     state++;
                 }
-
                 break;
 
-            case 5:
+            case 5: //checks that encoders are reset
                 if (have_drive_encoders_reset())
                 {
                     state++;
                 }
                 break;
 
-            case 6:
+            case 6: //Moves forward
                 run_using_encoders();
                 set_drive_power(-.5, -.5);
                 state++;
                 break;
 
-            case 7:
-                cs = hardwareMap.colorSensor.get("color2");
-                cs.enableLed(true);
-                Color.RGBToHSV((colorSensor.red() * 255) / 800, (colorSensor.green() * 255) / 800, (colorSensor.blue() * 255) / 800, hsvValues);
-                if (cs.green() > 245 && cs.blue() > 245 && cs.green() > 245) {
-                    reset_drive_encoders();
-                    set_drive_power(0,0);
+            case 7: //after certain dist., slows to read color values better
+                if (has_left_drive_encoder_reached(6000)) {
+                    set_drive_power(-.2,-.2);
                     state++;
                 }
                 break;
 
-            case 8:
+            case 8: //Checks color, if not recognized (if white) stops
+                cs = hardwareMap.colorSensor.get("color2");
+                Color.RGBToHSV((cs.red() * 255) / 800, (cs.green() * 255) / 800, (cs.blue() * 255) / 800, hsvValues2);
+                if (hsvValues2[0] > 17 && hsvValues2[0] < 21) {
+                    set_drive_power(0,0);
+                    reset_drive_encoders();
+                    state++;
+                }
+                break;
+
+            case 9: //checks that encoders are reset
                 if (have_drive_encoders_reset()) {
                     state++;
                 }
                 break;
 
-            case 9: // Move forward a little bit
+            case 10: // turns right, stops after certain dist.
 
                 run_using_encoders();
-                set_drive_power(-.4, -.4);
-
-                if (has_left_drive_encoder_reached(5)) {
+                set_drive_power(-.4, .4);
+                if (heading >= 90) {
                     reset_drive_encoders();
                     set_drive_power(0,0);
                     state++;
                 }
-
                 break;
 
-            case 10: // Wait for the previous statement to finish executing...repeat after every case
+            case 11: //checks that encoders are reset
 
                 if (has_left_drive_encoder_reset())
                 {
@@ -155,13 +186,13 @@ public class BlueAutonomousWhite extends PushBotTelemetrySensors {
                 }
                 break;
 
-            case 11:
+            case 12: //Turns left
                 run_using_encoders();
-                set_drive_power(-.2, 0);
+                set_drive_power(-.3, 0);
                 state++;
                 break;
 
-            case 12:
+            case 13: //stops after rotating
                 if (heading == 0 || (heading > 350 && heading < 360)) {
                     reset_drive_encoders();
                     set_drive_power(0, 0);
@@ -169,17 +200,17 @@ public class BlueAutonomousWhite extends PushBotTelemetrySensors {
                 }
                 break;
 
-            case 13:
+            case 14: //Moves forward
                 run_using_encoders();
                 set_drive_power(-.2,-.2);
                 state++;
                 break;
 
-            case 14:  //identify the first color on the beacon
+            case 15:  //identify the first color on the beacon
                 Color.RGBToHSV((colorSensor.red() * 255) / 800, (colorSensor.green() * 255) / 800, (colorSensor.blue() * 255) / 800, hsvValues);
                 telemetry.addData("Hue", hsvValues[0]);
                 hue = hsvValues[0];
-                if ((hue >= 330 && hue <= 360) || (hue >= 220 && hue <= 240)) {
+                if ((hue >= 330 && hue <= 360) || (hue >= 210 && hue <= 235)) {
                     if (hue > 330 && hue <= 360) {
                         colorDetected = "red";
                         if (firstColorDetected.length() == 0) {
@@ -191,109 +222,116 @@ public class BlueAutonomousWhite extends PushBotTelemetrySensors {
                         if (firstColorDetected.length() == 0) {
                             firstColorDetected = "blue";
                         }
-
                     }
                     reset_drive_encoders();
-                    set_drive_power(0,0);
+                    set_drive_power(0, 0);
+                    telemetry.addData("Stopped robot", "");
                     state++;
                 }
                 break;
 
-            case 15:  //extend the beacon out
-                if (colorDetected.equals("blue")) {
-                    push_button();
-                    state++;
-                }
-                else {
-                    state = 15;
-                }
-                break;
-
-            case 16:
-                if (buttonWait()) {
-                    state++;
-                }
-                break;
-
-            case 17:
-                run_using_encoders();
-                set_drive_power(-.2, -.2);
-                state++;
-                break;
-
-            case 18:
-                Color.RGBToHSV((colorSensor.red() * 255) / 800, (colorSensor.green() * 255) / 800, (colorSensor.blue() * 255) / 800, hsvValues);
-                telemetry.addData("Hue", hsvValues[0]);
-                hue = hsvValues[0];
-                if (firstColorDetected.equals("red")) {
-                    if (!(hue >= 330 && hue <= 360)) {
-                        reset_drive_encoders();
-                        set_drive_power(0, 0);
-                        state++;
-                    }
-                }
-                else {
-                    if (!(hue >= 220 && hue <= 240)) {
-                        reset_drive_encoders();
-                        set_drive_power(0, 0);
-                        state++;
-                    }
-                }
-                break;
-
-            case 19:
+            case 16: //checks that encoders are reset
                 if (have_drive_encoders_reset()) {
                     state++;
                 }
                 break;
 
-            case 20:
-                retract_button();
+            case 17: //moves forward, if detects blue or red, stops
+                run_using_encoders();
+                set_drive_power(.2,.2);
+                if (firstColorDetected.equals("blue")) {
+                    if (has_left_drive_encoder_reached(400)) {
+                        reset_drive_encoders();
+                        set_drive_power(0, 0);
+                        state++;
+                    }
+                }
+                else if (firstColorDetected.equals("red")) {
+                    if (has_left_drive_encoder_reached(600)) {
+                        reset_drive_encoders();
+                        set_drive_power(0, 0);
+                        state++;
+                    }
+                } else { // Something is wrong
+
+                    state++;
+                }
+                break;
+
+            case 18:  //extends the pusher out
+                push_button();
                 state++;
                 break;
 
-            case 21:
+            case 19: //waits, moves on after 2 seconds
                 if (buttonWait()) {
                     state++;
                 }
                 break;
 
-            case 22:
+            case 20: //retracts pusher
+                retract_button();
+                state++;
+                break;
+
+            case 21: //waits, moves on after 2 seconds
+                if (buttonWait()) {
+                    state++;
+                }
+                break;
+
+            case 22: //checks that encoders are reset
+                if (have_drive_encoders_reset()) {
+                    state++;
+                }
+                break;
+
+            case 23: //moves forward, after certain dist., stops
+                telemetry.addData("Moving Forward to adjust for climber drop", "");
+                run_using_encoders();
+                set_drive_power(-.3,-.3);
+                if (firstColorDetected.equals("blue")) {
+                    if (has_left_drive_encoder_reached(200)) {
+                        reset_drive_encoders();
+                        set_drive_power(0, 0);
+                        state++;
+                    }
+                }
+                else {
+                    state++;
+                }
+                break;
+
+            case 24: //rotates climber arm
                 turn_climbers();
                 state++;
                 break;
 
-            case 23:
+            case 25: //waits two seconds for climber arm to extend, moves on
                 if (climbersWait()) {
                     state++;
                 }
                 break;
 
-            case 24:
+            case 26: //rotates climber arm
                 drop_climbers();
                 state++;
                 break;
 
-            case 25:
+            case 27: //waits for two seconds for climbers to drop, moves on
                 if (dropWait()) {
                     state++;
                 }
                 break;
 
-            case 26:
+            case 28: //retracts climber arm
                 retract_climbers();
                 state++;
-                break;
-
-            case 27:
-                if (climbersWait()) {
-                    state++;
-                }
+                sweeper.setPower(0);
                 break;
 
             default:
-                set_drive_power(0,0);
-                sweeper.setPower(0);
+
                 break;
         }
 
@@ -303,7 +341,11 @@ public class BlueAutonomousWhite extends PushBotTelemetrySensors {
         telemetry.addData("First Color Detected", firstColorDetected);
         telemetry.addData("Color Detected", colorDetected);
         telemetry.addData("CurrentColor", hsvValues[0]);
-        telemetry.addData("Hue", hsvValues[1]);
+        telemetry.addData("Blue found", hsvValues[0] > 230 && hsvValues[0] < 250);
+        telemetry.addData("Sweeper power", sweeper.getPower());
+        telemetry.addData("Runtime", getRuntime());
+        telemetry.addData("Color sensor 2 hue", hsvValues2[0]);
+        DbgLog.msg("JDroids Telemetry file");
 
     }
 }

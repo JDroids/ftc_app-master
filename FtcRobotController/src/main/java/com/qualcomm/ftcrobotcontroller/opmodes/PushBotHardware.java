@@ -858,22 +858,26 @@ public class PushBotHardware extends OpMode
 
     } // have_drive_encoders_reset
 
+    //Swings climber arm outwards
     void turn_climbers() {
         turn_climbers.setPosition(1);
         resetStartTime();
     }
 
+    //Swings climber arm back in to initial position
     void retract_climbers() {
         turn_climbers.setPosition(0);
         resetStartTime();
     }
 
+    //Spins climber arm in reverse direction, drops climbers
     void drop_climbers() {
         drop_climbers.setDirection(Servo.Direction.REVERSE);
         drop_climbers.setPosition(1);
         resetStartTime();
     }
 
+    //Extends pusher
     void push_button() {
         push_button.setPosition(1);
         turn_climbers.setPosition(0);
@@ -883,13 +887,14 @@ public class PushBotHardware extends OpMode
         resetStartTime();
     }
 
+    //Retracts pusher
     void retract_button() {
         push_button.setDirection(Servo.Direction.REVERSE);
         push_button.setPosition(1);
         resetStartTime();
-
     }
 
+    //Waits while extends pusher, push button, retract pusher
     boolean buttonWait() {
         if (timeCalled) {
             timeToStop = getRuntime() + 2;
@@ -904,24 +909,7 @@ public class PushBotHardware extends OpMode
         return false;
     }
 
-    boolean buttonWait2() {
-        if (getRuntime() >= 2) {
-            push_button.setPosition(.5);
-            return true;
-        }
-        telemetry.addData("Runtime", getRuntime());
-        return false;
-    }
-
-    boolean climbersWait2() {
-        if (getRuntime() >= 2) {
-            return true;
-        }
-        telemetry.addData("Runtime", getRuntime());
-        return false;
-
-    }
-
+    //Waits while climber arm extends
     boolean climbersWait() {
         if (timeCalled) {
             timeToStop = getRuntime() + 2;
@@ -936,6 +924,7 @@ public class PushBotHardware extends OpMode
 
     }
 
+    //Waits while climber arm rotates fully
     boolean dropWait() {
         if (timeCalled2) {
             timeToStop2 = getRuntime() + 2;
@@ -951,15 +940,7 @@ public class PushBotHardware extends OpMode
 
     }
 
-    boolean dropWait2() {
-        if (getRuntime() >= 2) {
-            drop_climbers.setPosition(.5);
-            return true;
-        }
-        telemetry.addData("Runtime", getRuntime());
-        return false;
 
-    }
 
     private boolean v_warning_generated = false;
 

@@ -6,10 +6,8 @@ import com.qualcomm.robotcore.util.Range;
 
 public class JDTestDrive extends OpMode {
 
-    DcMotor motorRightFront;
-    DcMotor motorLeftFront;
-    DcMotor motorLeftBack;
-    DcMotor motorRightBack;
+    DcMotor motorRight;
+    DcMotor motorLeft;
 
     String orientation = "FORWARD";
 
@@ -25,13 +23,10 @@ public class JDTestDrive extends OpMode {
     public void init() {
 
         // Initialize motors being used
-        motorRightFront = hardwareMap.dcMotor.get("m1");
-        motorRightBack = hardwareMap.dcMotor.get("m2");
-        motorLeftFront = hardwareMap.dcMotor.get("m4");
-        motorLeftBack = hardwareMap.dcMotor.get("m3");
+        motorRight = hardwareMap.dcMotor.get("m1");
+        motorLeft = hardwareMap.dcMotor.get("m2");
 
-        motorLeftFront.setDirection(DcMotor.Direction.REVERSE);
-        motorLeftBack.setDirection(DcMotor.Direction.REVERSE);
+        motorLeft.setDirection(DcMotor.Direction.REVERSE);
 
     }
 
@@ -58,10 +53,8 @@ public class JDTestDrive extends OpMode {
         rightThrottle = (float)scaleInput(rightThrottle);
 
         // Set power to motors based on position of the analog sticks
-        motorRightFront.setPower(rightThrottle);
-        motorRightBack.setPower(rightThrottle);
-        motorLeftFront.setPower(leftThrottle);
-        motorLeftBack.setPower(leftThrottle);
+        motorRight.setPower(rightThrottle);
+        motorLeft.setPower(leftThrottle);
 
         // Sets the orientation of the robot so the front side is forward
         if (gamepad1.dpad_up) {

@@ -2,19 +2,19 @@ package com.qualcomm.ftcrobotcontroller.opmodes;
 
 import android.graphics.Color;
 
-import com.qualcomm.ftccommon.DbgLog;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorController;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 
 public class BlueAutonomous extends PushBotTelemetrySensors {
 
-    File outputfile;
-    FileWriter out;
+    boolean hasWriterClosed = false;
+
+    PrintWriter writer;
     String text;
 
     private int state = 0;
@@ -45,31 +45,18 @@ public class BlueAutonomous extends PushBotTelemetrySensors {
         resetStartTime();
         colorSensor = hardwareMap.colorSensor.get("color");
 
-        outputfile = new File("/sdcard/testout.txt");
-
-        //Set the file for write mode
         try {
-            out = new FileWriter(outputfile);
-        } catch (IOException e) {
-            DbgLog.logStacktrace(e);
+            writer = new PrintWriter("/sdcard/testout.txt", "UTF-8");
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
         }
 
         //Write some text to the file
         text = "JDroids Test Logs";
-        try {
-            out.write(text);
-        } catch (IOException e) {
-            DbgLog.logStacktrace(e);
-        }
 
-        //Close the resource
-        if(out != null) {
-            try {
-                out.close();
-            } catch (IOException e) {
-                DbgLog.logStacktrace(e);
-            }
-        }
+        writer.println(text);
     }
 
     @Override
@@ -84,6 +71,7 @@ public class BlueAutonomous extends PushBotTelemetrySensors {
 
         if (state != 0) {
             heading = sensorGyro.getHeading();
+            writer.println("Gyro Heading = " + heading);
         }
 
         switch (state) {
@@ -99,10 +87,11 @@ public class BlueAutonomous extends PushBotTelemetrySensors {
 
                 run_using_encoders();
                 set_drive_power(-.5, -.5);
-
+                writer.println("Encoder count = " + a_left_encoder_count());
                 if (has_left_drive_encoder_reached(2500)) {
                     reset_drive_encoders();
-                    set_drive_power(0,0);
+                    set_drive_power(0, 0);
+                    writer.println("Stopped robot, encoders reached 2500");
                     state++;
                 }
                 break;
@@ -147,6 +136,7 @@ public class BlueAutonomous extends PushBotTelemetrySensors {
             case 7: //if ____, slows
                 if (has_left_drive_encoder_reached(6000)) {
                     set_drive_power(-.2,-.2);
+                    writer.println("Slowed robot, encoders reached 6000");
                     state++;
                 }
                 break;
@@ -154,6 +144,7 @@ public class BlueAutonomous extends PushBotTelemetrySensors {
             case 8: //Checks color, if ___ stops
                 cs = hardwareMap.colorSensor.get("color2");
                 Color.RGBToHSV((cs.red() * 255) / 800, (cs.green() * 255) / 800, (cs.blue() * 255) / 800, hsvValues2);
+                writer.println("Hue = " + hsvValues2[0]);
                 if (hsvValues2[0] > 340 || hsvValues2[0] < 9) {
                     set_drive_power(0,0);
                     reset_drive_encoders();
@@ -173,7 +164,8 @@ public class BlueAutonomous extends PushBotTelemetrySensors {
                 set_drive_power(-.4, -.4);
                 if (has_left_drive_encoder_reached(1000)) {
                     reset_drive_encoders();
-                    set_drive_power(0,0);
+                    set_drive_power(0, 0);
+                    writer.println("Stopped robot, encoders reached 1000");
                     state++;
                 }
                 break;
@@ -331,7 +323,10 @@ public class BlueAutonomous extends PushBotTelemetrySensors {
                 break;
 
             default:
-
+                if (!hasWriterClosed) {
+                    writer.close();
+                }
+                hasWriterClosed = true;
                 break;
         }
 
@@ -345,13 +340,6 @@ public class BlueAutonomous extends PushBotTelemetrySensors {
         telemetry.addData("Sweeper power", sweeper.getPower());
         telemetry.addData("Runtime", getRuntime());
         telemetry.addData("Color sensor 2 hue", hsvValues2[0]);
-        DbgLog.msg("JDroids Telemetry file");
-        DbgLog.msg("Heading: " + heading);
-        try {
-            out.write(heading);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
     }
 }

@@ -56,7 +56,7 @@ public class ColorSensorDriver extends LinearOpMode {
   public void runOpMode() throws InterruptedException {
     hardwareMap.logDevices();
 
-    colorSensor = hardwareMap.colorSensor.get("color2");
+    colorSensor = hardwareMap.colorSensor.get("color");
 
     waitForStart();
 

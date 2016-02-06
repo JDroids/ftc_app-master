@@ -1,5 +1,7 @@
 package com.qualcomm.ftcrobotcontroller.opmodes;
 
+import android.provider.Telephony;
+
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.Range;
@@ -8,6 +10,11 @@ public class JDTestDrive extends OpMode {
 
     DcMotor motorRight;
     DcMotor motorLeft;
+    DcMotor churroWheels;
+    DcMotor motorTapeMeasure;
+    DcMotor motorTapePivot;
+
+    int power = 0;
 
     String orientation = "FORWARD";
 
@@ -23,8 +30,12 @@ public class JDTestDrive extends OpMode {
     public void init() {
 
         // Initialize motors being used
-        motorRight = hardwareMap.dcMotor.get("m1");
-        motorLeft = hardwareMap.dcMotor.get("m2");
+        motorRight = hardwareMap.dcMotor.get("m2");
+        motorLeft = hardwareMap.dcMotor.get("m1");
+        motorTapeMeasure = hardwareMap.dcMotor.get("m4");
+        motorTapePivot = hardwareMap.dcMotor.get("m5");
+
+        churroWheels = hardwareMap.dcMotor.get("m3");
 
         motorLeft.setDirection(DcMotor.Direction.REVERSE);
 
@@ -43,6 +54,43 @@ public class JDTestDrive extends OpMode {
             leftThrottle = gamepad1.right_stick_y;
         }
 
+        // Set churro wheels power to .5
+        if (gamepad1.dpad_up) {
+            churroWheels.setPower(.5);
+        }
+        // Set churro wheels to power -.5
+        if (gamepad1.dpad_down) {
+            churroWheels.setPower(-.5);
+            // Set churro wheels to power 0 (stop)
+        }
+        if (gamepad1.dpad_right) {
+            churroWheels.setPower(0);
+        }
+        // Swap orientation of robot so the front becomes the back
+        if (gamepad1.dpad_left) {
+            orientation = "BACKWARD";
+        }
+        // Set motorTapeMeasure to power -.5
+
+        if (gamepad1.a){
+            motorTapeMeasure.setPower(-.5);
+        }
+        // Set motorTapeMeasure to power 0 (stop)
+
+        if (gamepad1.b) {
+            motorTapeMeasure.setPower(.5);
+        }
+
+        if (gamepad1.x) {
+            motorTapeMeasure.setPower(0);
+        }
+
+        motorTapePivot.setPower(gamepad1.right_trigger);
+        motorTapePivot.setPower(-gamepad1.left_trigger);
+
+        if (gamepad1.left_bumper) {
+            motorTapePivot.setPower(.5);
+        }
 
         // Ensure values are not greater than 1 or less than -1
         leftThrottle = Range.clip(leftThrottle, -1, 1);
@@ -56,15 +104,7 @@ public class JDTestDrive extends OpMode {
         motorRight.setPower(rightThrottle);
         motorLeft.setPower(leftThrottle);
 
-        // Sets the orientation of the robot so the front side is forward
-        if (gamepad1.dpad_up) {
-            orientation = "FORWARD";
-        }
-
-        // Sets the orientation of the robot so the back side is forward
-        if (gamepad1.dpad_down) {
-            orientation = "BACKWARD";
-        }
+        telemetry.addData("m5", motorTapePivot.getDeviceName());
 
     }
 

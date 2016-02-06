@@ -43,7 +43,8 @@ public class FtcOpModeRegister implements OpModeRegister {
 
     manager.register("TeleOp", JDTankDrive.class);
     manager.register("BlueAutonomous", BlueAutonomousWhite.class);
-      manager.register("Log", logtest.class);
+    manager.register("Log", logtest.class);
+    manager.register("TestDrive", JDTestDrive.class);
 
   }
 }

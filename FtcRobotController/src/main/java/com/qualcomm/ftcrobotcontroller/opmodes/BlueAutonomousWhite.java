@@ -77,7 +77,7 @@ public class BlueAutonomousWhite extends PushBotTelemetrySensors {
                 break;
 
             case 5:
-                if (ods2.getLightDetectedRaw() > 100 && ods2.getLightDetectedRaw() < 115) {
+                if (ods2.getLightDetectedRaw() > 100 && ods2.getLightDetectedRaw() < 125) {
                     set_drive_power(0,0);
                     reset_drive_encoders();
                     state++;

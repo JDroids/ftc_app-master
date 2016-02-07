@@ -1,6 +1,5 @@
 package com.qualcomm.ftcrobotcontroller.opmodes;
 
-import com.qualcomm.ftccommon.DbgLog;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -8,22 +7,30 @@ import com.qualcomm.robotcore.util.Range;
 
 public class JDTankDrive extends OpMode {
 
-    DcMotor motorRightFront;
-    DcMotor motorLeftFront;
-    DcMotor motorLeftBack;
-    DcMotor motorRightBack;
-    DcMotor sweeper;
-    DcMotor churroWheels;
+    DcMotor motorRight;
+    DcMotor motorLeft;
 
-    Servo leftTrigger;
-    Servo rightTrigger;
-    Servo plough;
-    Servo turnClimbers;
-    Servo dropClimbers;
+    DcMotor motorTapeMeasure;
+    DcMotor motorTapePivot;
 
-    int sweeperDirection = 0;
+    DcMotor motorWinch;
+    DcMotor motorChurroWheels;
+
+    Servo rightWheelGuard;
+    Servo leftWheelGuard;
+
+    Servo rightPusher;
+    Servo leftPusher;
+
+    Servo climberSwinger;
+    Servo climberDrop;
+
+    Servo ziplineTrigger;
 
     String orientation = "FORWARD";
+
+    float leftThrottle;
+    float rightThrottle;
 
     public JDTankDrive() {
 
@@ -33,124 +40,82 @@ public class JDTankDrive extends OpMode {
     public void init() {
 
         // Initialize motors being used
-        motorRightFront = hardwareMap.dcMotor.get("m1");
-        motorLeftFront = hardwareMap.dcMotor.get("m4");
-        motorRightBack = hardwareMap.dcMotor.get("m2");
-        motorLeftBack = hardwareMap.dcMotor.get("m3");
+        motorRight = hardwareMap.dcMotor.get("mRight");
+        motorLeft = hardwareMap.dcMotor.get("mLeft");
 
-        // Sweeps debris out of the way
-        sweeper = hardwareMap.dcMotor.get("m5");
-        churroWheels = hardwareMap.dcMotor.get("m6");
+        motorTapeMeasure = hardwareMap.dcMotor.get("mTape");
+        motorWinch = hardwareMap.dcMotor.get("mWinch");
 
-        motorLeftFront.setDirection(DcMotor.Direction.REVERSE);
-        motorLeftBack.setDirection(DcMotor.Direction.REVERSE);
+        motorTapePivot = hardwareMap.dcMotor.get("mPivot");
+        motorChurroWheels = hardwareMap.dcMotor.get("mChurro");
 
-        rightTrigger = hardwareMap.servo.get("s1");
-        rightTrigger.setPosition(1);
-        leftTrigger = hardwareMap.servo.get("s2");
-        leftTrigger.setPosition(0);
+        motorLeft.setDirection(DcMotor.Direction.REVERSE);
 
-        plough = hardwareMap.servo.get("s3");
-        plough.setPosition(.3);
+        leftWheelGuard = hardwareMap.servo.get("sLeftGuard");
+        rightWheelGuard = hardwareMap.servo.get("sRightGuard");
 
-        turnClimbers = hardwareMap.servo.get("s4");
-        turnClimbers.setPosition(0);
+        leftPusher = hardwareMap.servo.get("sLeftPusher");
+        rightPusher = hardwareMap.servo.get("sRightPusher");
 
-        dropClimbers = hardwareMap.servo.get("s5");
-        dropClimbers.setPosition(.5);
+        climberSwinger = hardwareMap.servo.get("sSwinger");
+        climberDrop = hardwareMap.servo.get("sDropper");
+
+        ziplineTrigger = hardwareMap.servo.get("sZipline");
 
     }
 
     @Override
     public void loop() {
 
-        // Speeds for the left wheels and the right wheels
-        float leftThrottle;
-        float rightThrottle;
-
-
         // Allows the driver to alter controls of the robot depending on the orientation of the bot
         if (orientation.equals("FORWARD")) {
-            leftThrottle = -gamepad1.left_stick_y;
-            rightThrottle = -gamepad1.right_stick_y;
+            leftThrottle = gamepad1.left_stick_y;
+            rightThrottle = gamepad1.right_stick_y;
         }
         else {
-            rightThrottle = gamepad1.left_stick_y;
-            leftThrottle = gamepad1.right_stick_y;
+            rightThrottle = -gamepad1.left_stick_y;
+            leftThrottle = -gamepad1.right_stick_y;
         }
 
-
-        // Ensure values are not greater than 1 or less than -1
         leftThrottle = Range.clip(leftThrottle, -1, 1);
         rightThrottle = Range.clip(rightThrottle, -1, 1);
 
-        // Scale throttle values so it is easier to control the robot
         leftThrottle = (float)scaleInput(leftThrottle);
         rightThrottle = (float)scaleInput(rightThrottle);
 
-        // Set power to motors based on position of the analog sticks
-        motorRightFront.setPower(rightThrottle);
-        motorRightBack.setPower(rightThrottle);
-        motorLeftFront.setPower(leftThrottle);
-        motorLeftBack.setPower(leftThrottle);
+        motorRight.setPower(rightThrottle);
+        motorLeft.setPower(leftThrottle);
 
-        leftTrigger.setPosition(gamepad2.left_trigger);
-        rightTrigger.setPosition(1-gamepad2.right_trigger);
-
-        // Sets the orientation of the robot so the front side is forward
-        if (gamepad1.dpad_up) {
+        if (gamepad1.dpad_right) {
             orientation = "FORWARD";
         }
-
-        // Sets the orientation of the robot so the back side is forward
-        if (gamepad1.dpad_down) {
+        if (gamepad1.dpad_left) {
             orientation = "BACKWARD";
         }
-
-        if(gamepad1.left_bumper) {
-            plough.setPosition(.7);
-        }
-
         if (gamepad1.right_bumper) {
-            plough.setPosition(.5);
+            motorChurroWheels.setPower(-1);
+        }
+        if (gamepad1.left_bumper) {
+            motorChurroWheels.setPower(1);
+        }
+        if (gamepad1.x) {
+            motorChurroWheels.setPower(0);
         }
 
-        turnClimbers.setPosition(gamepad1.right_trigger);
-        dropClimbers.setDirection(Servo.Direction.REVERSE);
-        dropClimbers.setPosition(Range.clip(gamepad1.left_trigger, .5, 1));
 
-        // Powers up sweeper
-        if (gamepad2.left_bumper) {
-            sweeper.setPower(1);
-            sweeperDirection = 0;
-        }
+        motorTapePivot.setPower(gamepad1.right_stick_y);
+        motorTapeMeasure.setPower(gamepad1.left_stick_y);
 
-        // Switches direction of sweeper
         if (gamepad2.right_bumper) {
-            sweeper.setPower(-1);
-            sweeperDirection = 1;
+            motorWinch.setPower(1);
         }
-
-        // Stops the sweeper
+        if (gamepad2.left_bumper) {
+            motorWinch.setPower(-1);
+        }
         if (gamepad2.x) {
-            sweeper.setPower(0);
+            motorWinch.setPower(0);
         }
 
-        if (gamepad2.y) {
-            sweeper.setPower(.05);
-        }
-
-        if (gamepad2.dpad_up) {
-            churroWheels.setPower(1);
-        }
-        if (gamepad2.dpad_down) {
-            churroWheels.setPower(-1);
-        }
-        if (gamepad2.a) {
-            churroWheels.setPower(0);
-        }
-
-        DbgLog.msg("JDroids Telemetry file");
     }
 
     @Override
